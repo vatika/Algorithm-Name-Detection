@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html lang="en" class="no-js ie6 lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 7]>
+<html lang="en" class="no-js ie7 lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html lang="en" class="no-js ie8 lt-ie9"> <![endif]-->
+<!--[if IE 9]>
+<html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html lang="en" class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Error - Springer</title>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <meta name="viewport" content="width=device-width"/>
+    <!--[if (gt IE 8) | (IEMobile)]><!-->
+    <link rel="stylesheet" href="/static/0.9047/css/modern_link.css"/>
+    <!--<![endif]-->
+    <!--[if (lt IE 9) & (!IEMobile)]><link rel="stylesheet" href="/static/0.9047/css/ielt9_link.css"><!--<![endif]-->
+    <link rel="shortcut icon" href="/static/sites/0.9047/link/images/favicon.ico"/>
+    <script>document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');</script>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="header">
+        <a href="/" id="logo"><img src="/static/sites/0.9047/link/images/logo.png" alt="Logo"/></a>
+        <span class="pillow-btn open-menu" title="Open menu">Menu</span>
+
+        <div class="panel-menu">
+          <ul id="global-nav">
+            <li><a href="/">Home</a></li>
+          </ul>
+        </div>
+      </div>
+      <div id="content">
+        <div id="error">
+          <h1>Page not found</h1>
+          <p>Sorry, the page you requested is unavailable. The link you requested might be broken, or no longer exist.</p>
+          <p>SpringerLink is providing researchers with access to millions of scientific documents from <a href='/search?facet-content-type="Journal"'>Journals</a>, <a href='/search?facet-content-type="Book"'>Books</a>, <a href='/search?facet-content-type="Protocol"'>Protocols</a> and <a href='/search?facet-content-type="ReferenceWork"'>Reference works</a>.</p>
+          <p>Why not start at our <a href="/">homepage</a>?</p>
+        </div>
+      </div>
+      <!-- /content -->
+      <div id="footer">
+        <div id="footer-legal" class="section" role="contentinfo">
+          <div id="mobile-nav">
+            <span class="pillow-btn open-legal" title="Show Legal Information">Legal</span>
+          </div>
+          <div id="legal" role="contentinfo">
+            <span id="footer-copyright">&copy; Springer, Part of Springer Science+Business Media</span>
+            <a id="footer-privacy" href="/termsandconditions">Privacy Policy, Disclaimer, General Terms & Conditions</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /wrapper -->
+    <noscript>
+      <div id="jsnotice" class="prompt-bar">
+        <p>JavaScript is currently disabled. This site works even better with JavaScript.
+          Please <a href="http://enable-javascript.com/">enable JavaScript in your browser</a>!</p>
+      </div>
+    </noscript>
+    <!-- Get Satisfaction Feedback Tab -->
+      <script>
+        var is_ssl = ("https:" == document.location.protocol);
+        var asset_host = is_ssl ? "https://s3.amazonaws.com/getsatisfaction.com/" :
+        "http://s3.amazonaws.com/getsatisfaction.com/";
+        document.write(unescape("%3Cscript src='" + asset_host + "javascripts/feedback-v2.js'
+        type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <script>
+        var feedback_widget_options = {};
+        feedback_widget_options.display = "overlay";
+        feedback_widget_options.company = "springer_rd";
+        feedback_widget_options.placement = "left";
+        feedback_widget_options.color = "#666";
+        feedback_widget_options.style = "idea";
+
+        GSFN.feedback_widget.prototype.local_base_url = "http://feedback.rd.springer.com";
+        GSFN.feedback_widget.prototype.local_ssl_base_url = "http://feedback.rd.springer.com";
+        var feedback_widget = new GSFN.feedback_widget(feedback_widget_options);
+      </script>
+    <!-- /Get Satisfaction Feedback Tab -->
+    <script src="/static/js/webtrekk/webtrekk_v3.js"></script>
+    <script type="text/javascript">
+      var pageConfig = {linkTrack : "link",heatmap : "1",form : "1", contentId : "rd_springer_com.error"};
+      try {
+      var wt = new webtrekkV3(pageConfig);
+      wt.sendinfo();
+      } catch(exception) { }
+    </script>
+    <noscript>
+      <div id="webtrekk">
+        <img src="http://springergmbh01.webtrekk.net/935649882378213/wt?p=311,rd_springer.com.error,0,0,0,0,0,0,0,0"
+             height="1" width="1" alt=""/>
+      </div>
+    </noscript>
+  </body>
+</html>
