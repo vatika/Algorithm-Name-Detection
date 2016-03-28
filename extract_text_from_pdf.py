@@ -3,7 +3,7 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
-
+import pycountry
 
 from os import listdir
 from os.path import isfile, join
@@ -18,9 +18,13 @@ from nltk import pos_tag
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 import csv
+
+from nltk.tag.perceptron import PerceptronTagger
+tagger = PerceptronTagger()
+
 import json
 import re
-import geograpy
+#import geograpy
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -30,7 +34,12 @@ retstr = StringIO()
 codec = 'utf-8'
 laparams = LAParams()
 device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-
+locations=[]
+for x in pycountry.countries:
+    locations.append(x.name.lower())
+for x in pycountry.subdivisions:
+    locations.append(x.name.lower())
+print locations
 def remove_noise(en):
 #	re.compile('')
 	pass
@@ -82,17 +91,18 @@ if __name__ == "__main__":
             
                 pdf_id += 1
                 text = convert_pdf_to_text('small_dataset/'+pdf)
-		
+	
                 words = word_tokenize(text.decode('utf-8'))
 		p=nltk.pos_tag(words)
 #		print p
 		x = 0
+        
 		entity_names = []
 
 		sentences = sent_tokenize(text.decode('utf-8'))
 		tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
 #		print tokenized_sentences
-		tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
+		tagged_sentences = [tagger.tag(sentence) for sentence in tokenized_sentences]
 		chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
 #		print chunked_sentences
 		for tree in chunked_sentences:
@@ -101,17 +111,17 @@ if __name__ == "__main__":
 		resp = []
 		for name in entity_names:
 			try:
-				name = name.decode('ascii')
-				places = geograpy.get_place_context(url=name)
-				if not places.countries and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
-					resp.append(name)
+				#name = name.decode('ascii')
+				#places = geograpy.get_place_context(url=name)
+				if name.lower() not in locations and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
+					resp.append(name.lower())
 			except:
 				pass
 		for name in resp:
 			print name
 		print len(resp)
 		break
-                features[pdf_id] = [words, sentences]
+                #features[pdf_id] = [words, sentences]
 		
                 json.dump(features, open('data.json', 'wb'))
     print count
