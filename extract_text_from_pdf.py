@@ -60,7 +60,7 @@ def citation(sentence):
 		try:
 			name = name.decode('ascii')
 			if name.lower() not in LOCATIONS and name not in new_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
-					print name
+					
 					new_ents.append(name.lower())
 			
 		except Exception as e:
