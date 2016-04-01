@@ -25,7 +25,6 @@ tagger = PerceptronTagger()
 
 import json
 import re
-#import geograpy
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -39,11 +38,12 @@ REFERENCES ="(References.*)"
 CITATIONS = "(\[[^\]]*)([0-9])(?=[^\]]*\])"
 REFERENCES_RE = re.compile(REFERENCES)
 CITATIONS_RE = re.compile(CITATIONS)
-locations=[]
+LOCATIONS = []
 for x in pycountry.countries:
-    locations.append(x.name.lower())
+    LOCATIONS.append(x.name.lower())
+    LOCATIONS.append(x.alpha3.lower())
 for x in pycountry.subdivisions:
-    locations.append(x.name.lower())
+    LOCATIONS.append(x.name.lower())
 
 def citation(sentence):
 	
@@ -59,7 +59,7 @@ def citation(sentence):
 	for name in entity_names:
 		try:
 			name = name.decode('ascii')
-			if name.lower() not in locations and name not in new_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
+			if name.lower() not in LOCATIONS and name not in new_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
 					print name
 					new_ents.append(name.lower())
 			
@@ -174,7 +174,6 @@ if __name__ == "__main__":
 #		for name in entity_names:
 #			try:
 				#name = name.decode('ascii')
-				#places = geograpy.get_place_context(url=name)
 #				if name.lower() not in locations and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
 #					resp.append(name.lower())
 #			except:
