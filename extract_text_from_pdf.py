@@ -16,8 +16,9 @@ from nltk import tokenize, ne_chunk_sents
 from nltk import word_tokenize
 from nltk import pos_tag
 from nltk.tokenize import sent_tokenize, word_tokenize
-
+from nltk.tag.perceptron import PerceptronTagger
 import csv
+TAGGER = PerceptronTagger()
 
 from nltk.tag.perceptron import PerceptronTagger
 tagger = PerceptronTagger()
@@ -34,12 +35,39 @@ retstr = StringIO()
 codec = 'utf-8'
 laparams = LAParams()
 device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+REFERENCES ="(References.*)"
+CITATIONS = "(\[[^\]]*)([0-9])(?=[^\]]*\])"
+REFERENCES_RE = re.compile(REFERENCES)
+CITATIONS_RE = re.compile(CITATIONS)
 locations=[]
 for x in pycountry.countries:
     locations.append(x.name.lower())
 for x in pycountry.subdivisions:
     locations.append(x.name.lower())
-print locations
+
+def citation(sentence):
+	print sentence
+	flag=0
+	tokenized_sentences = [nltk.word_tokenize(sentence)]
+	tagged_sentences = [TAGGER.tag(sentence) for sentence in tokenized_sentences]
+	#print tagged_sentences
+	chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
+	for tree in chunked_sentences:
+		entity_names.extend(extract_entity_names(tree))
+	resp = []
+	new_ents = []
+	for name in entity_names:
+		try:
+			name = name.decode('ascii')
+			if name.lower() not in locations and name not in new_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
+					print name
+					new_ents.append(name.lower())
+			
+		except Exception as e:
+			print e
+	return new_ents
+
+
 def remove_noise(en):
 #	re.compile('')
 	pass
@@ -91,7 +119,9 @@ if __name__ == "__main__":
             
                 pdf_id += 1
                 text = convert_pdf_to_text('small_dataset/'+pdf)
-	
+		ind=text.index('References')
+		text=text[1:ind]
+		print text
                 words = word_tokenize(text.decode('utf-8'))
 		p=nltk.pos_tag(words)
 #		print p
@@ -100,28 +130,52 @@ if __name__ == "__main__":
 		entity_names = []
 
 		sentences = sent_tokenize(text.decode('utf-8'))
-		tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+		new_sents = []
+		for sent in sentences:
+#			#print sent
+			if len(CITATIONS_RE.findall(sent)) > 0:
+				#print sent
+				new_sents.append(sent)
+		sentences = new_sents
+		for sent in sentences:
+			new_ents = citation(sent)
+			cit_idx = int(sent.index("["))
+			for ent in new_ents:
+				try:
+					ent_idx = int(sent.index(ent))
+					print abs(ent_idx - cit_idx)
+				except Exception as e:
+					print ''
+				
+		print new_ents		
+#		tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+
+
+
+
+
+		
 #		print tokenized_sentences
-		tagged_sentences = [tagger.tag(sentence) for sentence in tokenized_sentences]
-		chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
+#		tagged_sentences = [tagger.tag(sentence) for sentence in tokenized_sentences]
+#		chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
 #		print chunked_sentences
-		for tree in chunked_sentences:
+#		for tree in chunked_sentences:
 #			print tree
-			entity_names.extend(extract_entity_names(tree))
-		resp = []
-		for name in entity_names:
-			try:
+#			entity_names.extend(extract_entity_names(tree))
+#		resp = []
+#		for name in entity_names:
+#			try:
 				#name = name.decode('ascii')
 				#places = geograpy.get_place_context(url=name)
-				if name.lower() not in locations and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
-					resp.append(name.lower())
-			except:
-				pass
-		for name in resp:
-			print name
-		print len(resp)
+#				if name.lower() not in locations and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
+#					resp.append(name.lower())
+#			except:
+#				pass
+#		for name in resp:
+#			print name
+#		print len(resp)
 		break
-                #features[pdf_id] = [words, sentences]
+                features[pdf_id] = [words, sentences]
 		
                 json.dump(features, open('data.json', 'wb'))
     print count
