@@ -4,7 +4,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 import pycountry
-
+from sets import Set
 from os import listdir
 from os.path import isfile, join
 import nltk
@@ -46,8 +46,8 @@ for x in pycountry.subdivisions:
     locations.append(x.name.lower())
 
 def citation(sentence):
-	print sentence
-	flag=0
+	
+	
 	tokenized_sentences = [nltk.word_tokenize(sentence)]
 	tagged_sentences = [TAGGER.tag(sentence) for sentence in tokenized_sentences]
 	#print tagged_sentences
@@ -110,18 +110,22 @@ def extract_entity_names(t):
 if __name__ == "__main__":
     authors = author_names()
     count = 0
+    
     features = {}
     #extract features from pdf like word tokens and sentence tokens and save them to a csv file
     with open('features.csv','wb') as csv_file:
         pdf_id = 0
         csv = csv.writer(csv_file)
+	
         for pdf in listdir('small_dataset'):
-            
+		filename='file'+str(pdf_id)            	
+		f=open(filename,'w')
+		
                 pdf_id += 1
                 text = convert_pdf_to_text('small_dataset/'+pdf)
 		ind=text.index('References')
 		text=text[1:ind]
-		print text
+		
                 words = word_tokenize(text.decode('utf-8'))
 		p=nltk.pos_tag(words)
 #		print p
@@ -143,11 +147,15 @@ if __name__ == "__main__":
 			for ent in new_ents:
 				try:
 					ent_idx = int(sent.index(ent))
-					print abs(ent_idx - cit_idx)
+					
 				except Exception as e:
 					print ''
 				
-		print new_ents		
+		
+		p=set(new_ents)
+		for item in p:
+			f.write(item+'\n')
+		f.close()
 #		tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
 
 
@@ -174,8 +182,6 @@ if __name__ == "__main__":
 #		for name in resp:
 #			print name
 #		print len(resp)
-		break
-                features[pdf_id] = [words, sentences]
 		
                 json.dump(features, open('data.json', 'wb'))
     print count
