@@ -30,10 +30,10 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 #set some globals
 rsrcmgr = PDFResourceManager()
-retstr = StringIO()
+#retstr = StringIO()
 codec = 'utf-8'
 laparams = LAParams()
-device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+#device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
 REFERENCES ="(References.*)"
 CITATIONS = "(\[[^\]]*)([0-9])(?=[^\]]*\])"
 REFERENCES_RE = re.compile(REFERENCES)
@@ -46,26 +46,25 @@ for x in pycountry.subdivisions:
     LOCATIONS.append(x.name.lower())
 
 def citation(sentence):
-	
-	
 	tokenized_sentences = [nltk.word_tokenize(sentence)]
-	tagged_sentences = [TAGGER.tag(sentence) for sentence in tokenized_sentences]
-	#print tagged_sentences
+	tagged_sentences = [pos_tag(sentence) for sentence in tokenized_sentences]
 	chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
+	entity_names = []
 	for tree in chunked_sentences:
 		entity_names.extend(extract_entity_names(tree))
 	resp = []
-	new_ents = []
+	named_ents = []
 	for name in entity_names:
 		try:
 			name = name.decode('ascii')
-			if name.lower() not in LOCATIONS and name not in new_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
+			if name.lower() not in LOCATIONS and name not in named_ents and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
 					
-					new_ents.append(name.lower())
+					named_ents.append(name.lower())
 			
 		except Exception as e:
 			print e
-	return new_ents
+#        print named_ents
+	return named_ents
 
 
 def remove_noise(en):
@@ -76,25 +75,29 @@ def author_names():
 		name = word_tokenize(fp.read().decode('utf-8'))
 	return name
 
+
 def convert_pdf_to_text(path):
+    retstr = StringIO()
+    device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
     fp = file(path, 'rb')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
     maxpages = 0
-    caching = True
+    caching = False
     pagenos=set()
     for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
         interpreter.process_page(page)
     text = retstr.getvalue()
     fp.close()
-    
+
+    retstr.close()
+    device.close()
     return text
 
 
 
 def extract_entity_names(t):
     entity_names = []
-#    print t   
     if hasattr(t, 'label') and t.label:
 #	print t.label()
         if t.label() == 'NE':
@@ -109,81 +112,27 @@ def extract_entity_names(t):
 
 if __name__ == "__main__":
     authors = author_names()
-    count = 0
-    
-    features = {}
-    #extract features from pdf like word tokens and sentence tokens and save them to a csv file
-    with open('features.csv','wb') as csv_file:
-        pdf_id = 0
-        csv = csv.writer(csv_file)
-	
-        for pdf in listdir('small_dataset'):
-		filename='file'+str(pdf_id)            	
-		f=open(filename,'w')
+    pdf_id = 0 
+    for pdf in listdir('small_dataset'):
+        filename='file'+str(pdf_id)
+        f=open(filename,'w')
 		
-                pdf_id += 1
-                text = convert_pdf_to_text('small_dataset/'+pdf)
-		ind=text.index('References')
-		text=text[1:ind]
-		
-                words = word_tokenize(text.decode('utf-8'))
-		p=nltk.pos_tag(words)
-#		print p
-		x = 0
-        
-		entity_names = []
-
-		sentences = sent_tokenize(text.decode('utf-8'))
-		new_sents = []
-		for sent in sentences:
-#			#print sent
-			if len(CITATIONS_RE.findall(sent)) > 0:
-				#print sent
-				new_sents.append(sent)
-		sentences = new_sents
-		for sent in sentences:
-			new_ents = citation(sent)
-			cit_idx = int(sent.index("["))
-			for ent in new_ents:
-				try:
-					ent_idx = int(sent.index(ent))
-					
-				except Exception as e:
-					print ''
-				
-		
-		p=set(new_ents)
-		for item in p:
-			f.write(item+'\n')
-		f.close()
-#		tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-
-
-
-
-
-		
-#		print tokenized_sentences
-#		tagged_sentences = [tagger.tag(sentence) for sentence in tokenized_sentences]
-#		chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
-#		print chunked_sentences
-#		for tree in chunked_sentences:
-#			print tree
-#			entity_names.extend(extract_entity_names(tree))
-#		resp = []
-#		for name in entity_names:
-#			try:
-				#name = name.decode('ascii')
-#				if name.lower() not in locations and name not in resp and len(name) > 2 and 'university' not in name.lower() and 'school' not in name.lower() and name not in authors:
-#					resp.append(name.lower())
-#			except:
-#				pass
-#		for name in resp:
-#			print name
-#		print len(resp)
-		
-                json.dump(features, open('data.json', 'wb'))
-    print count
-    device.close()
-    retstr.close()
- 
+        pdf_id += 1
+        text = convert_pdf_to_text('small_dataset/'+pdf)
+        ind=text.index('References')
+        text=text[1:ind]
+        sentences = sent_tokenize(text.decode('utf-8'))
+        new_sents = []
+	new_ents = []
+        for sent in sentences:
+            if len(CITATIONS_RE.findall(sent)) > 0:
+                new_sents.append(sent)
+        sentences = new_sents
+        for sent in sentences:
+            new_ents.extend(citation(sent))
+        p = set(new_ents)
+	print pdf
+	print p
+        for item in p:
+            f.write(item+'\n')
+        f.close()
