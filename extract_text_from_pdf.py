@@ -40,6 +40,7 @@ laparams = LAParams()
 #device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
 REFERENCES ="(References.*)"
 CITATIONS = "(\[[^\]]*)([0-9])(?=[^\]]*\])"
+#CITATIONS = "(\([^\)]*)(?=[\d{4}+])(?=[^\)]*\))"
 REFERENCES_RE = re.compile(REFERENCES)
 CITATIONS_RE = re.compile(CITATIONS)
 LOCATIONS = []
@@ -79,6 +80,35 @@ for word in false_positives:
 
 print true_positives
 print false_positives
+
+TESTING = {
+    'Analyzing The Role Of Dimension Arrangement For Data Visualization in Radviz\t.pdf': [],
+    'A Coupled Clustering Approach for Items Recommendation.pdf': ['cf', 'cbf' ,'clustknn'],
+    'An Approach to Identifying False Traces\nin Process Event Logs.pdf': [],
+    'A Generic Classifier-Ensemble Approach for Biomedical\nNamed Entity Recognition.pdf': ['svm', 'crf', 'memm', 'hmm'],
+    'A New Evaluation Function for Entropy-based Feature Selection from Incomplete Data.pdf': ['efs','lfs','pfs'],
+    "A Framework for Large-Scale Train Trip Record Analysis and Its Application to Passengers' Flow Prediction after Train Accidents.pdf": [],
+    'Topic Segmentation with an Aspect Hidden Markov Model\t.pdf': ['hmm'],
+    'Large Scale Topic Assignment on Multiple Social Networks\t.pdf': [],
+    'A Fast Secure Dot Product Protocol with Application to\nPrivacy Preserving Association Rule Mining.pdf': [],
+    'An aggressive margin-based algorithm for incremental learning\t.pdf': ['svm'],
+    'Analyzing Location Predictability on\nLocation-Based Social Networks.pdf': [],
+    'Topic Modeling Using Collapsed Typed\nDependency Relations.pdf': ['lda'],
+    'A Framework for SQL-based Mining of Large Graphs on Relational Databases.pdf': [],
+    'Efficiently Depth-First Minimal Pattern Mining.pdf': ['acminer','ndi'],
+    'A Graphical Model for Collective Behavior Learning Using Minority Games.pdf': [],
+    'A Concept-drifting Detection Algorithm for Categorical Evolving Data\t.pdf': [],
+    'MultiTask Metric Learning on Network Data.pdf': [],
+    'A New Framework for Dissimilarity and Similarity Learning\t.pdf': ['nca','mcml','lmnn'],
+    'A Double-Ensemble Approach for Classifying Skewed Data Streams.pdf': ['SDM07','SEA'],
+    'An Efficient GA-Based Algorithm for Mining Negative Sequential Patterns.pdf': ['pnsp','gsp'],
+    'An Associative Classifier For Uncertain Datasets.pdf': ['DTU','uRule','uHARMONY','UCBA'],
+    'An Approach for Fast Hierarchical Agglomerative Clustering using Graphics Processors with CUDA\t.pdf': [],
+    'A Graph Matching Method for Historical\nCensus Household Linkage.pdf': [],
+    'A Novel Framework to Improve siRNA Efficacy Prediction.pdf': ['BIOPREDsi','DSIR','Thermocomposition21','SVM'],
+    
+
+}
 
 def citation(sentence):
 	tokenized_sentences = [nltk.word_tokenize(sentence)]
@@ -150,6 +180,8 @@ if __name__ == "__main__":
     pdf_id = 0
     mainfile = open("mainfile", "w")
     for pdf in listdir('small_dataset'):
+        print "%s: []," % repr(pdf)
+    for pdf in listdir('small_dataset'):
         filename='file'+str(pdf_id)
         f=open(filename,'w')
         print pdf
@@ -157,6 +189,7 @@ if __name__ == "__main__":
         pdf_id += 1
         try:
             text = convert_pdf_to_text('small_dataset/'+pdf)
+#            print text
         except:
             continue
         try:
@@ -171,34 +204,63 @@ if __name__ == "__main__":
 #            if len(CITATIONS_RE.findall(sent)) > 0:
 #                new_sents.append(sent)
 #        sentences = new_sents
+#        print "*"*30
         for sent in sentences:
             temp_ents = citation(sent)
 #            print temp_sent, type(temp_sent)
             if len(CITATIONS_RE.findall(sent)) > 0:
+#                print CITATIONS_RE.findall(sent)
                 new_ents.extend(temp_ents)
+#                print temp_ents
+#        print "*"*30
         p = set(new_ents)
 #        print pdf
 #        print p
+        precision = 0
         for item in p:
             min_true = 10000000000000
             min_false = 10000000000000
+            sum_true = 0
+            sum_false = 0
             WORD1 = item
             try:
                 word1 = MODEL[item]
                 for word2 in TRUES:
                     dist = numpy.linalg.norm(word1 - word2)
+		    sum_true+=dist
                     min_true = min(min_true, dist)
                 for word2 in FALSES:
                     dist = numpy.linalg.norm(word1 - word2)
                     min_false = min(min_false, dist)
-                if min_true < min_false:
-                    print WORD1, min_true, min_false
+		    sum_false+=dist
+#                print WORD1, min_true, min_false
+#                if min_true < min_false:
+#                    print "first"
+#                    print WORD1, min_true, min_false
+                sum_true = sum_true / len(TRUES)
+                sum_false = sum_false / len(FALSES)
+                if min_true < min_false or sum_true < sum_false:
+                    if WORD1 in TESTING[pdf]:
+                        precision += 1
+#                    print WORD1
             except Exception as e:
 #                print "-"*30
 #                print e
 #                print "-"*30
                 pass
+
             mainfile.write(item + "\n")
             f.write(item+'\n')
         f.close()
+        if len(TESTING[pdf]) == 0:
+            recall = 1
+        else:
+            recall = precision / float(len(TESTING[pdf]))
+        if len(p) == 0:
+            precision = 1
+        else:
+            precision = precision / float(len(p))
+        print pdf
+        print "RECALL: " + str(recall)
+        print "PRECISION: " + str(precision)
     mainfile.close()
