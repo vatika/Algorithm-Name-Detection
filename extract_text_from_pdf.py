@@ -1,3 +1,7 @@
+import numpy
+
+from gensim.models import Word2Vec
+
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
@@ -44,6 +48,37 @@ for x in pycountry.countries:
     LOCATIONS.append(x.alpha3.lower())
 for x in pycountry.subdivisions:
     LOCATIONS.append(x.name.lower())
+
+true_positives = []
+false_positives = []
+
+with open('true_positives', 'r') as f:
+	for word in f.readlines():
+		true_positives.append(word.strip())
+
+with open('false_positives', 'r') as f:
+	for word in f.readlines():
+		false_positives.append(word.strip())
+
+MODEL = Word2Vec.load("model3.dat")
+
+TRUES = []
+FALSES = []
+
+for word in true_positives:
+	try:
+		TRUES.append(MODEL[word])
+	except:
+		pass
+
+for word in false_positives:
+	try:
+		FALSES.append(MODEL[word])
+	except:
+		pass
+
+print true_positives
+print false_positives
 
 def citation(sentence):
 	tokenized_sentences = [nltk.word_tokenize(sentence)]
@@ -112,7 +147,8 @@ def extract_entity_names(t):
 
 if __name__ == "__main__":
     authors = author_names()
-    pdf_id = 0 
+    pdf_id = 0
+    mainfile = open("mainfile", "w")
     for pdf in listdir('small_dataset'):
         filename='file'+str(pdf_id)
         f=open(filename,'w')
@@ -141,8 +177,28 @@ if __name__ == "__main__":
             if len(CITATIONS_RE.findall(sent)) > 0:
                 new_ents.extend(temp_ents)
         p = set(new_ents)
-        print pdf
-        print p
+#        print pdf
+#        print p
         for item in p:
+            min_true = 10000000000000
+            min_false = 10000000000000
+            WORD1 = item
+            try:
+                word1 = MODEL[item]
+                for word2 in TRUES:
+                    dist = numpy.linalg.norm(word1 - word2)
+                    min_true = min(min_true, dist)
+                for word2 in FALSES:
+                    dist = numpy.linalg.norm(word1 - word2)
+                    min_false = min(min_false, dist)
+                if min_true < min_false:
+                    print WORD1, min_true, min_false
+            except Exception as e:
+#                print "-"*30
+#                print e
+#                print "-"*30
+                pass
+            mainfile.write(item + "\n")
             f.write(item+'\n')
         f.close()
+    mainfile.close()

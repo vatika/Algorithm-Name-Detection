@@ -3,7 +3,7 @@ import numpy
 from gensim.models import Word2Vec
 
 named_ents = []
-with open('file', 'r') as f:
+with open('mainfile', 'r') as f:
 	for word in f.readlines():
 		named_ents.append(word.strip())
 
@@ -56,8 +56,8 @@ for word1 in named_ents:
 		for word2 in FALSES:
 			dist = numpy.linalg.norm(word1 - word2)
 			min_false = min(min_false, dist)
-#		print WORD1, min_true, min_false
-		if min_true < min_false:
-			print WORD1
+#		if min_true < min_false:
+#			print WORD1, min_true, min_false
 	except Exception as e:
-		pass
+		if e[0] in true_positives:
+			print e[0]
