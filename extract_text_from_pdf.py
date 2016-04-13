@@ -116,23 +116,33 @@ if __name__ == "__main__":
     for pdf in listdir('small_dataset'):
         filename='file'+str(pdf_id)
         f=open(filename,'w')
+        print pdf
 		
         pdf_id += 1
-        text = convert_pdf_to_text('small_dataset/'+pdf)
-        ind=text.index('References')
-        text=text[1:ind]
+        try:
+            text = convert_pdf_to_text('small_dataset/'+pdf)
+        except:
+            continue
+        try:
+            ind=text.index('References')
+            text=text[1:ind]
+        except:
+            pass
         sentences = sent_tokenize(text.decode('utf-8'))
         new_sents = []
-	new_ents = []
+        new_ents = []
+#        for sent in sentences:
+#            if len(CITATIONS_RE.findall(sent)) > 0:
+#                new_sents.append(sent)
+#        sentences = new_sents
         for sent in sentences:
+            temp_ents = citation(sent)
+#            print temp_sent, type(temp_sent)
             if len(CITATIONS_RE.findall(sent)) > 0:
-                new_sents.append(sent)
-        sentences = new_sents
-        for sent in sentences:
-            new_ents.extend(citation(sent))
+                new_ents.extend(temp_ents)
         p = set(new_ents)
-	print pdf
-	print p
+        print pdf
+        print p
         for item in p:
             f.write(item+'\n')
         f.close()
